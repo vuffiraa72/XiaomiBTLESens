@@ -654,11 +654,18 @@ sub ExecGatttool_Run($) {
     if ( defined($gatttool) and ($gatttool) ) {
 
         my $cmd;
+        my $lescanCmd;
         my $loop;
         my @gtResult;
         my $wait    = 1;
         my $sshHost = AttrVal( $name, "sshHost", "none" );
         my $hci     = AttrVal( $name, "hciDevice", "hci0" );
+
+        $lescanCmd .= "ssh $sshHost '"   if ( $sshHost ne 'none' );
+        $lescanCmd .= "timeout -s SIGINT 5s hcitool -i $hci lescan --passive 2>&1 /dev/null";
+        my $lescanResult = qx($lescanCmd);
+        Log3 $name, 5,
+          "XiaomiBTLESens ($name) - hcitool lescan: $lescanResult";
 
         $cmd .= "ssh $sshHost '"         if ( $sshHost ne 'none' );
         $cmd .= "timeout 10 "            if ($listen);
